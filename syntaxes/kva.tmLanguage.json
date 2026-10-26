@@ -1,0 +1,274 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "KivaDB",
+  "scopeName": "source.kva",
+  "fileTypes": [
+    "kva"
+  ],
+  "patterns": [
+    {
+      "include": "#comment"
+    },
+    {
+      "include": "#lua"
+    },
+    {
+      "include": "#statement-start"
+    },
+    {
+      "include": "#body"
+    }
+  ],
+  "repository": {
+    "comment": {
+      "patterns": [
+        {
+          "name": "comment.line.number-sign.kva",
+          "match": "^\\s*#.*$"
+        },
+        {
+          "name": "comment.line.double-dash.kva",
+          "match": "^\\s*--.*$"
+        }
+      ]
+    },
+    "statement-start": {
+      "comment": "The first word of a line is the command.",
+      "match": "^\\s*((?i:set|get|update|del|has|typeof|change|bump|print|keys|scan|range|json|convert|count|sum|avg|min|max|create|drop|indexes|explain|tune|begin|commit|rollback|savepoint|transaction|semantic|workspace|config|whoami|auth|users|modify|grant|revoke|audit|stats|compact|autocompact|check|hint|compress|encryption|memory|backup|bench|shutdown|eval|script|triggers|subscribe|unsubscribe|replica|wait|failover|ping|version|help|h|source|clear|exit|quit))(?=\\s|$)",
+      "captures": {
+        "1": {
+          "name": "keyword.control.command.kva"
+        }
+      }
+    },
+    "body": {
+      "patterns": [
+        {
+          "include": "#lua"
+        },
+        {
+          "include": "#property-name"
+        },
+        {
+          "include": "#string-double"
+        },
+        {
+          "include": "#string-single"
+        },
+        {
+          "include": "#backtick-key"
+        },
+        {
+          "include": "#bytes"
+        },
+        {
+          "include": "#key"
+        },
+        {
+          "include": "#number"
+        },
+        {
+          "include": "#constant"
+        },
+        {
+          "include": "#type"
+        },
+        {
+          "include": "#metric"
+        },
+        {
+          "include": "#keyword"
+        },
+        {
+          "include": "#operator"
+        },
+        {
+          "include": "#punctuation"
+        }
+      ]
+    },
+    "lua": {
+      "comment": "eval 'Lua code': the code is Lua, highlighted with VS Code's Lua grammar.",
+      "begin": "(?i)\\b(eval)\\s+(')",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.command.kva"
+        },
+        "2": {
+          "name": "punctuation.definition.string.begin.kva"
+        }
+      },
+      "end": "'",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.string.end.kva"
+        }
+      },
+      "contentName": "meta.embedded.block.lua",
+      "patterns": [
+        {
+          "include": "source.lua"
+        }
+      ]
+    },
+    "property-name": {
+      "comment": "A field name inside a JSON document: \"name\": ...",
+      "match": "(\")((?:[^\"\\\\]|\\\\.)*)(\")(?=\\s*:)",
+      "captures": {
+        "0": {
+          "name": "support.type.property-name.json.kva"
+        }
+      }
+    },
+    "string-double": {
+      "name": "string.quoted.double.kva",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.kva",
+          "match": "\\\\."
+        },
+        {
+          "include": "#interpolation"
+        }
+      ],
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.definition.string.begin.kva"
+        }
+      },
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.string.end.kva"
+        }
+      }
+    },
+    "string-single": {
+      "name": "string.quoted.single.kva",
+      "begin": "'",
+      "end": "'",
+      "patterns": [
+        {
+          "include": "#interpolation"
+        }
+      ],
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.definition.string.begin.kva"
+        }
+      },
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.string.end.kva"
+        }
+      }
+    },
+    "interpolation": {
+      "comment": "print \"Total ${prix * 2}\"",
+      "name": "meta.interpolation.kva",
+      "begin": "\\$\\{",
+      "end": "\\}",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.section.interpolation.begin.kva"
+        }
+      },
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.section.interpolation.end.kva"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#key"
+        },
+        {
+          "include": "#number"
+        },
+        {
+          "include": "#operator"
+        },
+        {
+          "name": "variable.other.kva",
+          "match": "[A-Za-z_][\\w]*"
+        }
+      ]
+    },
+    "backtick-key": {
+      "comment": "`get`: a reserved word used as a key.",
+      "name": "variable.other.key.quoted.kva",
+      "match": "`[^`]*`"
+    },
+    "bytes": {
+      "patterns": [
+        {
+          "name": "constant.numeric.hex.kva",
+          "match": "(?<![\\w:.\\-])0[xX][0-9A-Fa-f]+\\b"
+        },
+        {
+          "name": "constant.other.base64.kva",
+          "match": "(?<![\\w:.\\-])b64:[A-Za-z0-9+/=]+"
+        }
+      ]
+    },
+    "key": {
+      "comment": "Keys and key patterns with a prefix: client:42, user:*.address.city",
+      "patterns": [
+        {
+          "name": "variable.other.pattern.kva",
+          "match": "(?<![\\w\"'`])[A-Za-z_][\\w\\-.@+]*:[^\\s,()\\[\\]{}\"'`=<>!]*[*?][^\\s,()\\[\\]{}\"'`=<>!]*"
+        },
+        {
+          "name": "variable.other.key.kva",
+          "match": "(?<![\\w\"'`])[A-Za-z_][\\w\\-.@+]*:[^\\s,()\\[\\]{}\"'`=<>!]*"
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.kva",
+      "match": "(?<![\\w:.\\-])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?(?![\\w:.\\-])"
+    },
+    "constant": {
+      "name": "constant.language.kva",
+      "match": "(?i)(?<![\\w:.\\-])(true|false|null)(?![\\w:.\\-])"
+    },
+    "type": {
+      "comment": "Type prefixes: set number age 30",
+      "name": "storage.type.kva",
+      "match": "(?i)(?<![\\w:.\\-])(string|number|boolean|array|object|bytes)(?![\\w:.\\-])"
+    },
+    "metric": {
+      "name": "support.constant.kva",
+      "match": "(?i)(?<![\\w:.\\-])(cosine|dot|l2|btree|hash|hnsw|sq8|lz4|zlib|msgpack|admin|editor|viewer)(?![\\w:.\\-])"
+    },
+    "keyword": {
+      "name": "keyword.other.kva",
+      "match": "(?i)(?<![\\w:.\\-])(and|or|not|to|ttl|if|exists|like|from|limit|reverse|return|where|similar|metric|ef|ef_search|exact|on|using|m|quantize|none|recall|sample|queries|auto|off|default|group|by|text|vector|answer|threshold|depends|since|identified|role|password|read|write|all|as|run|of|index|user|trigger|lookup|store|stats|clear|status|append|insert|incr|len|delete|keys|type|pin|unpin|repair|info|last|failed-logins|load|list|show|current|switch|remove|promote|sync|start|stop|threshold|range|get|set|del|update)(?![\\w:.\\-])"
+    },
+    "operator": {
+      "name": "keyword.operator.comparison.kva",
+      "match": "!=|>=|<=|=|<|>|\\+|\\*|/|%"
+    },
+    "punctuation": {
+      "patterns": [
+        {
+          "name": "punctuation.separator.kva",
+          "match": "[,:]"
+        },
+        {
+          "name": "punctuation.section.braces.kva",
+          "match": "[{}]"
+        },
+        {
+          "name": "punctuation.section.brackets.kva",
+          "match": "[\\[\\]]"
+        },
+        {
+          "name": "punctuation.section.parens.kva",
+          "match": "[()]"
+        }
+      ]
+    }
+  }
+}

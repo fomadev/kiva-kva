@@ -1,0 +1,78 @@
+{
+  "name": "kiva-kva",
+  "displayName": "KivaDB Language (.kva)",
+  "description": "Syntax highlighting, editing rules and snippets for KivaDB command files (.kva).",
+  "version": "1.0.0",
+  "publisher": "fomadev",
+  "license": "SEE LICENSE IN LICENSE",
+  "icon": "images/icon.png",
+  "homepage": "https://github.com/fomadev/kiva-kva#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fomadev/kiva-kva.git"
+  },
+  "bugs": {
+    "url": "https://github.com/fomadev/kiva-kva/issues"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Snippets"
+  ],
+  "keywords": [
+    "kivadb",
+    "kva",
+    "database",
+    "syntax",
+    "snippets"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "kva",
+        "aliases": [
+          "KivaDB",
+          "kva"
+        ],
+        "extensions": [
+          ".kva"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./images/icon.png",
+          "dark": "./images/icon.png"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "kva",
+        "scopeName": "source.kva",
+        "path": "./syntaxes/kva.tmLanguage.json",
+        "embeddedLanguages": {
+          "meta.embedded.block.lua": "lua"
+        }
+      }
+    ],
+    "snippets": [
+      {
+        "language": "kva",
+        "path": "./snippets/kva.json"
+      }
+    ]
+  },
+  "scripts": {
+    "compile": "tsc -p .",
+    "test": "tsc -p . && node --test out/test/grammar.test.js out/test/snippets.test.js",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "@vscode/vsce": "^3.9.2",
+    "typescript": "^5.9.3",
+    "vscode-oniguruma": "^2.0.1",
+    "vscode-textmate": "^9.3.2"
+  }
+}

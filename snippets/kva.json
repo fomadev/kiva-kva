@@ -1,0 +1,147 @@
+{
+  "Set a value": {
+    "prefix": "set",
+    "body": ["set ${1:key} ${2:\"value\"}$0"],
+    "description": "Create a key (fails if it exists)."
+  },
+  "Set a value with a TTL": {
+    "prefix": "setttl",
+    "body": ["set ${1:session:token} ${2:\"value\"} ttl ${3:3600}$0"],
+    "description": "Create a key that deletes itself after a number of seconds."
+  },
+  "Set if not exists": {
+    "prefix": "setnx",
+    "body": ["set ${1:key} ${2:\"value\"} if not exists$0"],
+    "description": "Create a key only when it is missing (re-runnable files)."
+  },
+  "Set a JSON document": {
+    "prefix": "setdoc",
+    "body": [
+      "set ${1:user:1} {",
+      "  \"${2:name}\": ${3:\"Amani\"},",
+      "  \"${4:city}\": ${5:\"Goma\"}",
+      "}$0"
+    ],
+    "description": "Create a JSON document over several lines."
+  },
+  "Change a document field": {
+    "prefix": "jsonset",
+    "body": ["json set ${1:user:1} .${2:field} ${3:\"value\"}$0"],
+    "description": "Change one field of a document."
+  },
+  "Add to a number in place": {
+    "prefix": "jsonincr",
+    "body": ["json incr ${1:post:1} .${2:views} ${3:1}$0"],
+    "description": "Add a number to a field, in one step on the server."
+  },
+  "Append to an array": {
+    "prefix": "jsonappend",
+    "body": ["json append ${1:post:1} .${2:tags} ${3:\"value\"}$0"],
+    "description": "Add values at the end of an array."
+  },
+  "Query documents": {
+    "prefix": "where",
+    "body": ["get where ${1:user:*}.${2:field} ${3|=,!=,>,>=,<,<=|} ${4:value}${5: limit 10}${6: return ${7:name}}$0"],
+    "description": "Find documents by what they contain."
+  },
+  "Query with and / or": {
+    "prefix": "whereand",
+    "body": ["get where ${1:user:*}.${2:age} > ${3:18} and (${4:role} = ${5:\"dev\"} or ${6:role} = ${7:\"admin\"})$0"],
+    "description": "Combine comparisons with and, or, not and parentheses."
+  },
+  "Aggregate by group": {
+    "prefix": "groupby",
+    "body": ["${1|count,sum,avg,min,max|} ${2:order:*}.${3:total}${4: where ${5:status} = ${6:\"paid\"}} group by ${7:city}$0"],
+    "description": "count, sum, avg, min or max, one line per value of a field."
+  },
+  "Create an index": {
+    "prefix": "index",
+    "body": ["create index on ${1:user:} (${2:field})${3| using hash, using btree,|}$0"],
+    "description": "A secondary index: btree for comparisons, hash for = only."
+  },
+  "Explain a query": {
+    "prefix": "explain",
+    "body": ["explain get where ${1:user:*}.${2:field} = ${3:value}$0"],
+    "description": "Show how a query will run, and the index it lacks."
+  },
+  "Transaction": {
+    "prefix": "begin",
+    "body": [
+      "begin",
+      "${1:update account:a 35000}",
+      "${2:update account:b 25000}",
+      "commit$0"
+    ],
+    "description": "All or nothing."
+  },
+  "Transaction with a savepoint": {
+    "prefix": "savepoint",
+    "body": [
+      "begin",
+      "${1:set order:001 1500}",
+      "savepoint ${2:before_delete}",
+      "${3:del cart:9}",
+      "rollback to ${2:before_delete}",
+      "commit$0"
+    ],
+    "description": "Go back to a bookmark inside a transaction."
+  },
+  "Vector index (exact)": {
+    "prefix": "vindex",
+    "body": ["create vector index on ${1:doc:} (${2:embedding})$0"],
+    "description": "Keep the vectors of a field in memory; exact search."
+  },
+  "Vector index (HNSW)": {
+    "prefix": "hnsw",
+    "body": ["create vector index on ${1:doc:} (${2:embedding}) using hnsw metric ${3|cosine,dot,l2|}${4: quantize sq8}$0"],
+    "description": "Approximate index for large collections."
+  },
+  "Tune an HNSW index": {
+    "prefix": "tune",
+    "body": ["tune vector index on ${1:doc:} (${2:embedding}) recall ${3:0.95} auto$0"],
+    "description": "Measure the ef_search the index needs, and again as it grows."
+  },
+  "Similarity search": {
+    "prefix": "similar",
+    "body": ["get similar ${1:doc:*}.${2:embedding} to [${3:0.1, 0.2, 0.3}]${4: where ${5:lang} = ${6:\"fr\"}} limit ${7:5} metric ${8|cosine,dot,l2|} return ${9:title}$0"],
+    "description": "Find the documents closest to a vector."
+  },
+  "Semantic cache: lookup": {
+    "prefix": "semlookup",
+    "body": ["semantic lookup ${1:faq} text \"${2:question}\" vector [${3:0.12, -0.40, 0.88}]$0"],
+    "description": "The cached answer of this question, or of a near-identical one."
+  },
+  "Semantic cache: store": {
+    "prefix": "semstore",
+    "body": ["semantic store ${1:faq} text \"${2:question}\" vector [${3:0.12, -0.40, 0.88}] answer ${4:\"answer\"} ttl ${5:300} depends \"${6:kb:*}\"${7: since ${8:token}}$0"],
+    "description": "Remember an answer; since: only if its data did not change after the lookup."
+  },
+  "Lua script": {
+    "prefix": "eval",
+    "body": ["eval 'local v = kiva.get(ARGV[1]) ${1:return v}' ${2:key}$0"],
+    "description": "Run Lua next to the data, atomically."
+  },
+  "Trigger": {
+    "prefix": "trigger",
+    "body": ["create trigger ${1:name} on ${2|set,update,del|} \"${3:order:*}\" run \"${4:script}\"$0"],
+    "description": "Run a stored script when matching keys change."
+  },
+  "User": {
+    "prefix": "user",
+    "body": [
+      "create user \"${1:name}\" identified by \"${2:password}\" role ${3|editor,viewer,admin|}",
+      "grant ${4|read,write|} on workspace \"${5:shop}\" to \"${1:name}\"$0"
+    ],
+    "description": "Create an account and give it access to a workspace."
+  },
+  "Workspace": {
+    "prefix": "workspace",
+    "body": ["workspace create ${1:shop}", "workspace switch ${1:shop}$0"],
+    "description": "Create a workspace and enter it."
+  },
+  "Region": {
+    "prefix": "region",
+    "body": ["# region ${1:name}", "$0", "# endregion"],
+    "description": "A foldable region."
+  }
+}
